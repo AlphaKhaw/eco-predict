@@ -1,2 +1,1 @@
-# eco-predict
-AI-Driven Energy Consumption Analysis
+# Eco-Predict: AI-Driven Energy Consumption Analysis
