@@ -3,7 +3,7 @@ import sys
 from unittest.mock import patch
 
 import pytest
-import yaml
+from hydra import compose, initialize
 from omegaconf import DictConfig
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -20,11 +20,12 @@ def config() -> DictConfig:
     Returns:
         DictConfig: A sample configuration.
     """
-    config_path = os.path.join(
-        parent_dir, "conf", "base", "test_pipelines.yaml"
-    )
-    with open(config_path, "r") as f:
-        cfg = DictConfig(yaml.safe_load(f))
+    with initialize(
+        config_path="../../conf/base",
+        job_name="test_data_parser",
+        version_base="1.1",
+    ):
+        cfg = compose(config_name="test_pipelines.yaml")
 
     return cfg
 
