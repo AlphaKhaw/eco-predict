@@ -3,4 +3,4 @@ data_parser:
     - ListingofBuildingEnergyPerformanceData2019.xlsx
     - ListingofBuildingEnergyPerformanceData2020.csv
     - ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv
-  output_folderpath: "${hydra:runtime.cwd}/data/raw"
+  output_folderpath: "./data/raw"
