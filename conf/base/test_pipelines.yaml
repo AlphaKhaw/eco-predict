@@ -1,6 +1,3 @@
 data_parser:
   expected_files:
-    - ListingofBuildingEnergyPerformanceData2019.xlsx
-    - ListingofBuildingEnergyPerformanceData2020.csv
-    - ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv
   output_folderpath: "./data/raw"
