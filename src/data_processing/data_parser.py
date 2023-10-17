@@ -125,7 +125,7 @@ class DataParser:
 
     @staticmethod
     def _check_expected_files(
-        expected_files: list, output_folderpath: str
+        expected_files: Union[list, None], output_folderpath: str
     ) -> Union[list, bool]:
         """
         Check for the presence of expected files in the specified directory.
@@ -144,6 +144,10 @@ class DataParser:
             - list: A list of missing filenames if any files are missing.
             - bool: False if all files are present.
         """
+        if not expected_files:
+            logging.info("No files are expected")
+            return False
+
         missing_files = [
             file
             for file in expected_files
