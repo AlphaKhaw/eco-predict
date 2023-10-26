@@ -72,7 +72,10 @@ class DataPreprocessor:
             )
             filepath = os.path.join(output_folderpath, suffix)
             dataframe = read_dataframe(filepath=filepath)
-            self._drop_columns(dataframe=dataframe, columns=[common_identifier])
+            dataframe = self._drop_columns(
+                dataframe=dataframe, columns=[common_identifier]
+            )
+            export_dataframe(dataframe=dataframe, output_filepath=filepath)
             return
 
         # Read each file and append to a list
