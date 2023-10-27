@@ -10,4 +10,4 @@ inference:
     - 2019energyuseintensity
 
 streamlit:
-  fastapi_endpoint: "http://0.0.0.0:8000"
+  fastapi_endpoint: "http://52.221.187.78:8000"
