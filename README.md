@@ -8,12 +8,12 @@ With rising energy costs and increasing awareness about environmental sustainabi
 
 ## Target Users
 
-Building Owners: Understand energy performance to reduce costs.
-Architects & Designers: Design buildings with optimal energy performance in mind.
-Facility Managers: Implement energy conservation measures effectively.
+- `Building Owners`: Understand energy performance to reduce costs.
+- `Architects & Designers`: Design buildings with optimal energy performance in mind.
+- `Facility Managers`: Implement energy conservation measures effectively.
+- `Consultants`: Utilise machine learning to quantify estimation of building energy performance to clients and stakeholders.
 
 ### Dataset Description
-
 
 Source: https://beta.data.gov.sg/collections/22/datasets/d_e86d8a219d0936dbb321ade068a381da/view
 
@@ -30,14 +30,14 @@ The dataset consists of various building features, including:
 
 ## Features
 
-- Predict Energy Usage Intensity (EUI) based on building features.
-- Intuitive Streamlit interface for user inputs.
-- FastAPI backend for model serving.
-- Dockerized application for easy deployment.
+1. Predict Energy Usage Intensity (EUI) based on building features.
+2. Intuitive Streamlit interface for user inputs.
+3. FastAPI backend for model serving.
+4. Dockerized application for easy deployment.
 
 ## Prerequisites
 
-- Docker
+- Docker (for local deployment)
 - Docker Compose (for local deployment)
 - AWS account (for AWS Cloud deployment using EC2)
 
@@ -67,7 +67,7 @@ The dataset consists of various building features, including:
 
    This will bring up all the services defined in your `docker-compose.yml` file.
 
-4. Access the FastAPI server locally at: `http://localhost:8000`
+4. **Access the FastAPI server locally at:** `http://localhost:8000`
 
 
 ## Deployment to AWS EC2
@@ -109,7 +109,7 @@ The dataset consists of various building features, including:
 
 ### Streamlit Interface
 
-- Navigate to the Streamlit URL -
+- Navigate to the [Streamlit Web Application](https://alphakhaw-eco-predict-app-6a2wmt.streamlit.app/)
 - Input building features such as the percentage usage of LED, type of air conditioning system, average monthly building occupancy rate, and energy use intensities for 2017, 2018, and 2019.
 - Click the "Predict" button to get the predicted EUI value.
 
