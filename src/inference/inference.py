@@ -1,18 +1,23 @@
 import logging
-import os
-import sys
+from enum import Enum
 
-import hydra
 import joblib
 import xgboost as xgb
-from omegaconf import DictConfig
-
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from enums.enums import ModelType
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
+
+
+class ModelType(Enum):
+    RANDOM_FOREST = "random_forest"
+    XGBOOST = "xgboost"
+
+
+def get_model_enum(model_type_str: str) -> ModelType:
+    if isinstance(model_type_str, ModelType):
+        return model_type_str
+
+    return ModelType(model_type_str.lower())
 
 
 class Inference:
@@ -20,14 +25,18 @@ class Inference:
     Inference class to load model weights and perform inference.
     """
 
-    def __init__(self, cfg: DictConfig) -> None:
+    def __init__(self, cfg: dict) -> None:
         """
         Initialize a Inference object.
 
         Args:
-            cfg (DictConfig): Hydra configuration YAML.
+            cfg (dict): Hydra configuration YAML.
         """
         self.cfg = cfg
+        self.model_type = get_model_enum(cfg["inference"]["model"])
+        self.model_weights_filepath = self.cfg["inference"][
+            "model_weights_filepath"
+        ]
         self._load_model_weights()
 
     def predict(self, data):
@@ -41,42 +50,8 @@ class Inference:
             return self.model.predict(xgb.DMatrix(data))
 
     def _load_model_weights(self) -> None:
-        model_name = self.cfg.inference.model
-        model_weights_filepath = self.cfg.inference.model_weights_filepath
-
-        if model_name == ModelType.RANDOM_FOREST:
-            self.model = joblib.load(model_weights_filepath)
-        elif model_name == ModelType.XGBOOST:
+        if self.model_type == ModelType.RANDOM_FOREST:
+            self.model = joblib.load(self.model_weights_filepath)
+        elif self.model_type == ModelType.XGBOOST:
             self.model = xgb.Booster()
-            self.model.load_model(model_weights_filepath)
-
-
-@hydra.main(config_path="../../conf/base", config_name="pipelines.yaml")
-def run_standalone(cfg: DictConfig) -> None:
-    """
-    Initialize Hydra configuration and run standalone Inference class.
-
-    Args:
-        cfg (DictConfig): Hydra configuration.
-
-    Returns:
-        None
-    """
-    logging.info(run(cfg))
-
-
-def run(cfg: DictConfig) -> Inference:
-    """
-    Pass in Hydra configuration and run Inference class.
-
-    Args:
-        cfg (DictConfig): Hydra configuration.
-
-    Returns:
-        Inference: An instance of the Inference class.
-    """
-    return Inference(cfg)
-
-
-if __name__ == "__main__":
-    run_standalone()
+            self.model.load_model(self.model_weights_filepath)

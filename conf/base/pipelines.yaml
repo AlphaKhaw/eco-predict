@@ -164,6 +164,12 @@ trainer:
   models_folderpath: "${hydra:runtime.cwd}/models/weights"
   metrics_folderpath: "${hydra:runtime.cwd}/models/results"
   target_column: "2020energyuseintensity"
+  feature_selection:
+    enable_feature_selection: true
+    permutation_importance:
+      n_repeats: 30
+      random_state: 42
+      threshold: 6 #0.001
   cross_validation:
     kfold:
       n_splits: 5
@@ -171,6 +177,12 @@ trainer:
       random_state: 42
 
 inference:
-  model: "${model.model_name}"
-  model_weights: "RANDOM_FOREST_20231027_183111_agitated_kilby.pkl"
-  model_weights_filepath: "${trainer.models_folderpath}/${inference.model_weights}"
+  model: "RANDOM_FOREST"
+  model_weights_filepath: "./models/weights/RANDOM_FOREST_20231027_195230_determined_edison.pkl"
+  selected_features:
+    - percentageusageofled
+    - 2017energyuseintensity
+    - typeofairconditioningsystem_District Cooling Plant
+    - averagemonthlybuildingoccupancyrate
+    - 2018energyuseintensity
+    - 2019energyuseintensity
