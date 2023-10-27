@@ -53,10 +53,15 @@ class DataSplitter:
         self._check_input_ratio(
             train_ratio=train_ratio, val_ratio=val_ratio, test_ratio=test_ratio
         )
-        ratios = [train_ratio, val_ratio, test_ratio]
 
         # Read in processed file
         dataframe = read_dataframe(filepath=input_filepath)
+
+        # Check for train-val-test or train-test split
+        if val_ratio != 0.0:
+            ratios = [train_ratio, val_ratio, test_ratio]
+        else:
+            ratios = [train_ratio, test_ratio]
 
         # Split dataframe into train, validation and test set
         split_data = self._train_val_test_split(
@@ -92,10 +97,11 @@ class DataSplitter:
             ValueError: If sum of train_ratio and test_ratio does not add up
                         to 1.
         """
-        if not 0.0 < val_ratio < 1.0:
-            raise ValueError(
-                "val_ratio should be a floating point - 0 < val_ratio < 1"
-            )
+        if val_ratio != 0.0:
+            if not 0.0 < val_ratio < 1.0:
+                raise ValueError(
+                    "val_ratio should be a floating point - 0 < val_ratio < 1"
+                )
         total_ratio = sum([train_ratio, val_ratio, test_ratio])
 
         if not np.isclose(total_ratio, 1.0, atol=1e-9):
@@ -122,26 +128,30 @@ class DataSplitter:
 
         Args:
             split_datasets (list): A list of split datasets.
-            ratios (list[float]): List of train, valiation and test ratios.
+            ratios (list[float]): List of train, validation and test ratios or
+                                  train and test ratios.
             tolerance (float, optional): Tolerance value to allow deviations
-                from the ratios.
+                                         from the ratios.
 
         Raises:
             ValueError: If the distribution of data splits does not match the
-                input ratios.
-
-        Returns:
-            None
+                        input ratios.
         """
         total_samples = sum(len(dataset) for dataset in split_datasets)
         expected_counts = [int(total_samples * ratio) for ratio in ratios]
 
-        percentage_counts = {
-            split: round((len(data) / total_samples) * 100, 2)
-            for data, split in zip(
-                split_datasets, ["train", "validation", "test"]
-            )
-        }
+        if len(ratios) == 2:
+            percentage_counts = {
+                split: round((len(data) / total_samples) * 100, 2)
+                for data, split in zip(split_datasets, ["train", "test"])
+            }
+        else:
+            percentage_counts = {
+                split: round((len(data) / total_samples) * 100, 2)
+                for data, split in zip(
+                    split_datasets, ["train", "validation", "test"]
+                )
+            }
         logging.info(f"Percentage count: {percentage_counts}")
 
         ratio_diffs = [
@@ -159,7 +169,7 @@ class DataSplitter:
     @staticmethod
     def _train_val_test_split(
         dataframe: pd.DataFrame,
-        ratios: List[str],
+        ratios: List[float],
         seed: int,
     ) -> Tuple[pd.DataFrame]:
         """
@@ -172,23 +182,33 @@ class DataSplitter:
 
         Returns:
             tuple[pd.DataFrame]: A tuple containing train, validation and
-                test DataFrames.
+                                 test DataFrames or train and test DataFrames.
         """
-        train_ratio, val_ratio, test_ratio = ratios
-        train_val_data, test_data = train_test_split(
-            dataframe, test_size=test_ratio, random_state=seed, shuffle=True
-        )
-        adjusted_val_ratio = round(val_ratio / sum([train_ratio, val_ratio]), 2)
-        train_data, val_data = train_test_split(
-            train_val_data,
-            test_size=adjusted_val_ratio,
-            random_state=seed,
-            shuffle=True,
-        )
+        if len(ratios) == 2:
+            train_ratio, test_ratio = ratios
+            train_data, test_data = train_test_split(
+                dataframe, test_size=test_ratio, random_state=seed, shuffle=True
+            )
+            logging.info("Split data into train and test set")
 
-        logging.info("Split data into train, validation and test set")
+            return (train_data, test_data)
+        else:
+            train_ratio, val_ratio, test_ratio = ratios
+            train_val_data, test_data = train_test_split(
+                dataframe, test_size=test_ratio, random_state=seed, shuffle=True
+            )
+            adjusted_val_ratio = round(
+                val_ratio / sum([train_ratio, val_ratio]), 2
+            )
+            train_data, val_data = train_test_split(
+                train_val_data,
+                test_size=adjusted_val_ratio,
+                random_state=seed,
+                shuffle=True,
+            )
+            logging.info("Split data into train, validation and test set")
 
-        return (train_data, val_data, test_data)
+            return (train_data, val_data, test_data)
 
 
 @hydra.main(config_path="../../conf/base", config_name="pipelines.yaml")

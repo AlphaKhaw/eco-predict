@@ -51,7 +51,7 @@ def read_from_csv(filepath: str) -> pd.DataFrame:
     if file_path.suffix.lower() != ".csv":
         raise TypeError("Invalid file type. Only .csv files are accepted.")
 
-    dataframe = pd.read_csv(filepath, dtype=object)
+    dataframe = pd.read_csv(filepath)
     logging.info(f"Read CSV - {filepath}")
 
     return dataframe
