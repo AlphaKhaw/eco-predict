@@ -8,3 +8,6 @@ inference:
     - averagemonthlybuildingoccupancyrate
     - 2018energyuseintensity
     - 2019energyuseintensity
+
+streamlit:
+  fastapi_endpoint: "http://0.0.0.0:8000"
