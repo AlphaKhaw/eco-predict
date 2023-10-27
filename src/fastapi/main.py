@@ -26,7 +26,7 @@ def config() -> dict:
     Returns:
         dict: The configuration as a dictionary object.
     """
-    with open("conf/base/pipelines.yaml", "r") as stream:
+    with open("conf/base/inference.yaml", "r") as stream:
         try:
             cfg = yaml.safe_load(stream)
             return cfg
