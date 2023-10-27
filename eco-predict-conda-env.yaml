@@ -21,6 +21,9 @@ dependencies:
   - phik=0.11.2
   - xgboost=1.7.6
   - lightgbm=4.1.0
+  - uvicorn=0.23.2
+  - fastapi=0.99.1
+  - python-multipart=0.0.6
   - pip:
     - interpret==0.4.4
     - names_generator==0.1.0

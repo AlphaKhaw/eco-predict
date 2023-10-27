@@ -5,9 +5,11 @@ from datetime import datetime
 
 import hydra
 import joblib
+import numpy as np
 import pandas as pd
 from names_generator import generate_name
 from omegaconf import DictConfig
+from sklearn.inspection import permutation_importance
 from sklearn.metrics import (
     make_scorer,
     mean_absolute_error,
@@ -41,6 +43,9 @@ class Trainer:
         """
         Train the model.
         """
+        if self.cfg.trainer.feature_selection.enable_feature_selection:
+            self._perform_feature_selection()
+
         cross_validation_metrics = self._cross_validate()
         self.model.fit(self.X_train, self.y_train)
         test_metrics = self.evaluate()
@@ -48,6 +53,41 @@ class Trainer:
             cv_metrics=cross_validation_metrics, test_metrics=test_metrics
         )
         self._save_model()
+
+    def _perform_feature_selection(self):
+        config = self.cfg.trainer.feature_selection
+        if self.model.model_type == ModelType.XGBOOST:
+            pass
+        elif self.model.model_type == ModelType.RANDOM_FOREST:
+            self.model.fit(self.X_train, self.y_train)
+            scorer = make_scorer(mean_squared_error, greater_is_better=False)
+            perm_importance = permutation_importance(
+                estimator=self.model,
+                X=self.X_test,
+                y=self.y_test,
+                scoring=scorer,
+                n_repeats=config.permutation_importance.n_repeats,
+                random_state=config.permutation_importance.random_state,
+            )
+            perm_importance_mean = perm_importance.importances_mean
+
+            # Check if threshold is an integer
+            if isinstance(config.permutation_importance.threshold, int):
+                top_n_features = config.permutation_importance.threshold
+                important_features_idx = np.argsort(perm_importance_mean)[
+                    -top_n_features:
+                ]
+            else:
+                threshold = config.permutation_importance.threshold * np.max(
+                    perm_importance_mean
+                )
+                important_features_idx = np.where(
+                    perm_importance_mean > threshold
+                )[0]
+            logging.info("Selected features -")
+            logging.info(f"{self.X_train.columns[important_features_idx]}")
+            self.X_train = self.X_train.iloc[:, important_features_idx]
+            self.X_test = self.X_test.iloc[:, important_features_idx]
 
     def evaluate(self) -> dict:
         """
