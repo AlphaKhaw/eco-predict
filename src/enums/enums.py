@@ -25,3 +25,15 @@ IMPUTATION_FUNCTIONS = {
     ImputationStrategy.ITERATIVE: impute_with_iterative,
     ImputationStrategy.KNN: impute_with_knn,
 }
+
+
+class ModelType(Enum):
+    RANDOM_FOREST = "random_forest"
+    XGBOOST = "xgboost"
+
+
+def get_model_enum(model_type_str: str) -> ModelType:
+    if isinstance(model_type_str, ModelType):
+        return model_type_str
+
+    return ModelType(model_type_str.lower())
