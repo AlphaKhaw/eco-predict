@@ -1,0 +1,13 @@
+inference:
+  model: "RANDOM_FOREST"
+  model_weights_filepath: "./models/weights/RANDOM_FOREST_20231027_195230_determined_edison.pkl"
+  selected_features:
+    - percentageusageofled
+    - 2017energyuseintensity
+    - typeofairconditioningsystem_District Cooling Plant
+    - averagemonthlybuildingoccupancyrate
+    - 2018energyuseintensity
+    - 2019energyuseintensity
+
+streamlit:
+  fastapi_endpoint: "http://0.0.0.0:8000"
