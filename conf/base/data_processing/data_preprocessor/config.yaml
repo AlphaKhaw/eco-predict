@@ -1,0 +1,83 @@
+
+general:
+  output_folderpath: "${hydra:runtime.cwd}/data/preprocessed"
+  suffix: "preprocessed.csv"
+  common_identifier: "buildingaddress"
+datasets:
+  2019:
+    enable_preprocessing: false
+  2020:
+    enable_preprocessing: true
+    input_filepath: "${hydra:runtime.cwd}/data/raw/ListingofBuildingEnergyPerformanceData2020.csv"
+    preprocessing_steps:
+      drop_columns:
+        - 'buildingname'
+        - 'buildingtype'
+        - 'greenmarkyearofaward'
+        - 'centralisedairconditioningplantefficiency'
+        - 'yearoflastchillerplantaudithealthcheck'
+      remove_symbols:
+        'grossfloorarea': ','
+        'percentageofairconditionedfloorarea': '%'
+        'averagemonthlybuildingoccupancyrate': '%'
+        'percentageusageofled': '%'
+      convert_dtypes:
+        'grossfloorarea': float
+        'percentageofairconditionedfloorarea': float
+        'averagemonthlybuildingoccupancyrate': float
+        'percentageusageofled': float
+      impute_categorical_columns:
+        'buildingsize':
+          value: 'Omit'
+          threshold:
+        'greenmarkrating':
+          value: 'Not Awarded'
+        'greenmarkversion':
+          value: 'Not Awarded'
+      impute_numerical_columns:
+        'grossfloorarea':
+          strategy: 'median'
+        'percentageofairconditionedfloorarea':
+          strategy: 'median'
+        'averagemonthlybuildingoccupancyrate':
+          strategy: 'median'
+        'numberofhotelrooms':
+          strategy: 'constant'
+          value: 0.0
+        'ageofchiller':
+          strategy: 'median'
+        '2017':
+          strategy: 'median'
+        '2018':
+          strategy: 'median'
+        '2019':
+          strategy: 'median'
+        '2020':
+          strategy: 'median'
+      encode_columns:
+        binary:
+          'installationofsolarpv':
+            'Y': 1
+            'N': 0
+        nominal:
+          - 'mainbuildingfunction'
+          - 'greenmarkversion'
+          - 'typeofairconditioningsystem'
+        ordinal:
+          'buildingsize':
+            'Small': 1
+            'Large': 2
+          'greenmarkrating':
+            'Not Awarded': 1
+            'Legislated': 2
+            'Certified': 3
+            'Gold': 4
+            'GoldPlus': 5
+            'Platinum': 6
+      rename_columns:
+        '2017': '2017energyuseintensity'
+        '2018': '2018energyuseintensity'
+        '2019': '2019energyuseintensity'
+        '2020': '2020energyuseintensity'
+  commercial:
+    enable_preprocessing: false

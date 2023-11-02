@@ -1,0 +1,28 @@
+# data_parser:
+#   url: "https://beta.data.gov.sg/collections/22/view"
+#   expected_files:
+#     - ListingofBuildingEnergyPerformanceData2019.xlsx
+#     - ListingofBuildingEnergyPerformanceData2020.csv
+#     - ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv
+#   downloads_foldername: "Downloads"
+#   output_folderpath: "data/raw"
+#   download_file_button_xpath: '//*[@id="__next"]/div/main/div/div[1]/div/button'
+#   download_button_xpath: '//*[@id="chakra-modal-:r3:"]/div[3]/button'
+#   dataset_xpaths:
+#     'ListingofBuildingEnergyPerformanceData2019.xlsx': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[1]/div/div/div'
+#     'ListingofBuildingEnergyPerformanceData2020.csv': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[2]/div/div/div'
+#     'ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[3]/div/div/div'
+
+url: "https://beta.data.gov.sg/collections/22/view"
+expected_files:
+  - ListingofBuildingEnergyPerformanceData2019.xlsx
+  - ListingofBuildingEnergyPerformanceData2020.csv
+  - ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv
+downloads_foldername: "Downloads"
+output_folderpath: "data/raw"
+download_file_button_xpath: '//*[@id="__next"]/div/main/div/div[1]/div/button'
+download_button_xpath: '//*[@id="chakra-modal-:r3:"]/div[3]/button'
+dataset_xpaths:
+  'ListingofBuildingEnergyPerformanceData2019.xlsx': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[1]/div/div/div'
+  'ListingofBuildingEnergyPerformanceData2020.csv': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[2]/div/div/div'
+  'ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv': '/html/body/div[3]/div/div[3]/div/section/div[2]/div/div[3]/div/div/div'
