@@ -1,5 +1,5 @@
 general:
-  input_filepath: "${data_preprocessor.general.output_folderpath}/${data_preprocessor.general.suffix}"
+  input_filepath: "${data_processing.data_preprocessor.general.output_folderpath}/${data_processing.data_preprocessor.general.suffix}"
   output_folderpath: "${hydra:runtime.cwd}/data/split"
   suffix: ["train.csv", "test.csv"]
   seed: 42

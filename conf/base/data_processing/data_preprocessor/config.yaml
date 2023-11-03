@@ -1,4 +1,3 @@
-
 general:
   output_folderpath: "${hydra:runtime.cwd}/data/preprocessed"
   suffix: "preprocessed.csv"
@@ -6,9 +5,20 @@ general:
 datasets:
   2019:
     enable_preprocessing: false
+    input_filepath: "${data_processing.data_parser.output_folderpath}/ListingofBuildingEnergyPerformanceData2019.xlsx"
+    preprocessing_steps:
+      drop_columns:
+      remove_symbols:
+      convert_dtypes:
+      impute_categorical_columns:
+      encode_columns:
+        binary:
+        nominal:
+        ordinal:
+      rename_columns:
   2020:
     enable_preprocessing: true
-    input_filepath: "${hydra:runtime.cwd}/data/raw/ListingofBuildingEnergyPerformanceData2020.csv"
+    input_filepath: "${data_processing.data_parser.output_folderpath}/ListingofBuildingEnergyPerformanceData2020.csv"
     preprocessing_steps:
       drop_columns:
         - 'buildingname'
@@ -81,3 +91,14 @@ datasets:
         '2020': '2020energyuseintensity'
   commercial:
     enable_preprocessing: false
+    input_filepath: "${data_processing.data_parser.output_folderpath}/ListingofBuildingEnergyPerformanceDataforCommercialBuildings.csv"
+    preprocessing_steps:
+      drop_columns:
+      remove_symbols:
+      convert_dtypes:
+      impute_categorical_columns:
+      encode_columns:
+        binary:
+        nominal:
+        ordinal:
+      rename_columns:

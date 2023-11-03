@@ -1,7 +1,7 @@
 defaults:
-  - data_processing/data_parser/config.yaml
-  - data_processing/data_preprocessor/config.yaml
-  - data_processing/data_splitter/config.yaml
+  - data_processing/data_parser: config
+  - data_processing/data_preprocessor: config
+  - data_processing/data_splitter: config
 
 model:
   model_name: "RANDOM_FOREST" # "RANDOM_FOREST" or "XGBOOST"
@@ -53,8 +53,8 @@ model:
 
 trainer:
   data_path:
-    train: "${data_splitter.general.output_folderpath}/train.csv"
-    test: "${data_splitter.general.output_folderpath}/test.csv"
+    train: "${hydra:runtime.cwd}/data/split/train.csv"
+    test: "${hydra:runtime.cwd}/data/split/test.csv"
   models_folderpath: "${hydra:runtime.cwd}/models/weights"
   metrics_folderpath: "${hydra:runtime.cwd}/models/results"
   target_column: "2020energyuseintensity"
@@ -69,14 +69,3 @@ trainer:
       n_splits: 5
       shuffle: true
       random_state: 42
-
-inference:
-  model: "RANDOM_FOREST"
-  model_weights_filepath: "./models/weights/RANDOM_FOREST_20231027_195230_determined_edison.pkl"
-  selected_features:
-    - percentageusageofled
-    - 2017energyuseintensity
-    - typeofairconditioningsystem_District Cooling Plant
-    - averagemonthlybuildingoccupancyrate
-    - 2018energyuseintensity
-    - 2019energyuseintensity
