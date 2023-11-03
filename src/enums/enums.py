@@ -23,6 +23,15 @@ IMPUTATION_FUNCTIONS = {
 }
 
 
+class FeatureSelectionMethod(Enum):
+    PERCENTILE = "percentile"
+    K_BEST = "k_best"
+    FPR = "fpr"
+    FDR = "fdr"
+    MUTUAL_INFO = "mutual_info"
+    MODEL = "model"
+
+
 class ModelType(Enum):
     RANDOM_FOREST = "random_forest"
     XGBOOST = "xgboost"
