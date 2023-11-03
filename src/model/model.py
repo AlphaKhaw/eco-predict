@@ -1,13 +1,8 @@
-import os
-import sys
-
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from base.base_model import BaseModel
-from enums.enums import ModelType, get_model_enum
+from src.base.base_model import BaseModel
+from src.enums.enums import ModelType, get_model_enum
 
 MODELS = {
     ModelType.RANDOM_FOREST: RandomForestRegressor,

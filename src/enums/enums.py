@@ -1,10 +1,6 @@
-import os
-import sys
 from enum import Enum
 
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from utils.eda.eda import (
+from src.utils.eda.eda import (
     impute_with_iterative,
     impute_with_knn,
     impute_with_mean,

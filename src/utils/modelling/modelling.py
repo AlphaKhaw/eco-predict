@@ -4,25 +4,21 @@ import re
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import KFold, cross_validate
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
 
 
-"""
-<class 'sklearn.linear_model._base.LinearRegression'>
-<class 'sklearn.tree._classes.DecisionTreeRegressor'>
-<class 'sklearn.ensemble._forest.RandomForestRegressor'>
-<class 'xgboost.sklearn.XGBRegressor'>
-<class 'lightgbm.sklearn.LGBMRegressor'>
-<class 'interpret.glassbox._ebm._ebm.ExplainableBoostingRegressor'>
-"""
-
-
-def clean_column_names(dataframe):
+def clean_column_names(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
-    Remove special JSON characters from column names.
+    Remove special JSON characters from column names of a DataFrame.
+
+    Parameters:
+        dataframe (pd.DataFrame): The input DataFrame whose column names need
+                                  to be cleaned.
+    Returns:
+        pd.DataFrame: DataFrame with cleaned column names.
     """
     # Define a regex pattern for JSON special characters
     pattern = r'[{,}"\[\]:\s]'
@@ -35,7 +31,16 @@ def clean_column_names(dataframe):
 
 def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.DataFrame) -> dict:
     """
-    Evaluate the model and return the metrics: MAE, MSE, RMSE, R-squared.
+    Evaluate a trained model using several regression metrics.
+
+    Parameters:
+        model: A trained model with a `predict` method.
+        X_test (pd.DataFrame): The testing feature data.
+        y_test (pd.Series): The true target values for testing data.
+
+    Returns:
+        dict: Dictionary containing evaluation metrics
+              (MAE, MSE, RMSE, R-squared).
     """
     y_pred = model.predict(X_test)
     mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
@@ -51,9 +56,9 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.DataFrame) -> dict:
 
 def get_cross_val_scores(
     model,
-    X_train,
-    y_train,
-    cross_validator,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    cross_validator: KFold,
     scoring_metrics: list = [
         "neg_mean_absolute_error",
         "neg_root_mean_squared_error",
@@ -61,7 +66,16 @@ def get_cross_val_scores(
     ],
 ):
     """
-    Perform cross-validation using multiple metrics and log the results.
+    Perform cross-validation on the training data and log the results.
+
+    Parameters:
+        model: The model to evaluate.
+        X_train (pd.DataFrame): The training feature data.
+        y_train (pd.Series): The target values for training data.
+        cross_validator: Cross-validation strategy.
+        scoring_metrics (list, optional): List of scoring metrics for
+                                          evaluation. Defaults to MAE, RMSE,
+                                          and R-squared.
     """
     scores = cross_validate(
         model,

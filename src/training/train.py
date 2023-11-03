@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from datetime import datetime
 
 import hydra
@@ -18,11 +17,9 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold, cross_validate
 
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from enums.enums import ModelType
-from model.model import Model
-from utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
+from src.enums.enums import ModelType
+from src.model.model import Model
+from src.utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
