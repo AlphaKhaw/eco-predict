@@ -28,23 +28,20 @@ class DataParser:
             cfg (DictConfig): Hydra configuration YAML.
 
         Returns:
-            None
+            None.
         """
         self.cfg = cfg
-        self.expected_files = self.cfg.data_parser.expected_files
-        self.output_folderpath = self.cfg.data_parser.output_folderpath
-        missing_files = self._check_expected_files(
+        self.expected_files = self.cfg.expected_files
+        self.output_folderpath = self.cfg.output_folderpath
+
+        missing_files = self.check_expected_files(
             self.expected_files, self.output_folderpath
         )
         if missing_files:
-            chrome_options = Options()
-            chrome_options.add_argument("--headless")
-            self.driver = webdriver.Chrome(
-                ChromeDriverManager().install(), options=chrome_options
-            )
-            self._fetch_and_download(missing_files)
+            self._initialise_webdriver()
+            self.fetch_and_download(missing_files)
 
-    def _fetch_and_download(self, missing_files: list) -> None:
+    def fetch_and_download(self, missing_files: list) -> None:
         """
         Fetch the specified URL and download the datasets corresponding to the
         missing files using the provided xpaths.
@@ -57,10 +54,8 @@ class DataParser:
             None.
         """
         # Extract information from Hydra configuration YAML
-        url = self.cfg.data_parser.url
-        download_file_xpath = self.cfg.data_parser.download_file_button_xpath
-        download_xpath = self.cfg.data_parser.download_button_xpath
-        dataset_xpaths = self.cfg.data_parser.dataset_xpaths
+        url = self.cfg.url
+        dataset_xpaths = self.cfg.dataset_xpaths
         filtered_dataset_xpaths = {
             k: v for k, v in dataset_xpaths.items() if k in missing_files
         }
@@ -70,15 +65,7 @@ class DataParser:
 
         # Navigate and download
         for _, xpath in filtered_dataset_xpaths.items():
-            download_file_button = self.driver.find_element(
-                By.XPATH, download_file_xpath
-            )
-            download_file_button.click()
-            dataset_checkbox = self.driver.find_element(By.XPATH, xpath)
-            dataset_checkbox.click()
-            download_button = self.driver.find_element(By.XPATH, download_xpath)
-            download_button.click()
-            time.sleep(0.5)
+            self._navigate_and_download_dataset(xpath)
             self.driver.get(url)
 
         # Quit driver
@@ -86,6 +73,37 @@ class DataParser:
 
         # Shift downloaded files to output folder
         self._move_files_from_downloads(missing_files, self.output_folderpath)
+
+    def _click_element(self, xpath: str) -> None:
+        """
+        Clicks the web element identified by the provided xpath.
+
+        Args:
+            xpath (str): Xpath of the web element that needs to be clicked.
+        """
+        element = self.driver.find_element(By.XPATH, xpath)
+        element.click()
+
+    def _initialise_webdriver(self) -> None:
+        """
+        Initialise Chrome Webdriver.
+        """
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_experimental_option(
+            "prefs",
+            {
+                "download.default_directory": os.path.join(
+                    os.path.expanduser("~"), self.cfg.downloads_foldername
+                ),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True,
+            },
+        )
+        self.driver = webdriver.Chrome(
+            ChromeDriverManager().install(), options=chrome_options
+        )
 
     def _move_files_from_downloads(
         self, missing_files: list, output_folderpath: str
@@ -106,7 +124,7 @@ class DataParser:
         home = os.path.expanduser("~")
 
         # Get downloads folder
-        downloads_foldername = self.cfg.data_parser.downloads_foldername
+        downloads_foldername = self.cfg.downloads_foldername
 
         # Iterate through list of missing files
         for filename in missing_files:
@@ -123,8 +141,21 @@ class DataParser:
                 # Move the file
                 shutil.move(source_path, destination_path)
 
+    def _navigate_and_download_dataset(self, xpath: str) -> None:
+        """
+        Navigate through the web page and download the dataset associated with
+        the provided xpath.
+
+        Args:
+            xpath (str): Xpath of the dataset checkbox on the web page.
+        """
+        self._click_element(self.cfg.download_file_button_xpath)
+        self._click_element(xpath)
+        self._click_element(self.cfg.download_button_xpath)
+        time.sleep(0.5)
+
     @staticmethod
-    def _check_expected_files(
+    def check_expected_files(
         expected_files: Union[list, None], output_folderpath: str
     ) -> Union[list, bool]:
         """
@@ -187,7 +218,7 @@ def run(cfg: DictConfig) -> str:
     Returns:
         str: Status of DataParser class.
     """
-    DataParser(cfg)
+    DataParser(cfg.data_processing.data_parser)
 
     return "Complete parsing and downloading of data"
 

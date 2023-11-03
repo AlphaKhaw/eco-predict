@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from typing import List, Tuple
 
 import hydra
@@ -9,9 +8,7 @@ import pandas as pd
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
+from src.utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
@@ -235,7 +232,8 @@ def run(cfg: DictConfig) -> str:
     Returns:
         str: Status of DataSplitter class.
     """
-    splitter = DataSplitter(cfg)
+    print(cfg.data_processing.data_preprocessor.general.output_folderpath)
+    splitter = DataSplitter(cfg.data_processing)
     splitter.split_data()
 
     return "Complete data splitting"

@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from typing import Union
 
 import hydra
@@ -8,10 +7,8 @@ import pandas as pd
 from omegaconf import DictConfig, ListConfig
 from sklearn.preprocessing import OneHotEncoder
 
-sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../")
-
-from enums.enums import IMPUTATION_FUNCTIONS, ImputationStrategy
-from utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
+from src.enums.enums import IMPUTATION_FUNCTIONS, ImputationStrategy
+from src.utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
@@ -459,7 +456,7 @@ def run(cfg: DictConfig) -> str:
     Returns:
         str: Status of DataPreprocessor class.
     """
-    preprocessor_config = cfg.data_preprocessor
+    preprocessor_config = cfg.data_processing.data_preprocessor
     preprocessor = DataPreprocessor(preprocessor_config)
     for dataset, config in preprocessor_config.datasets.items():
         if config.enable_preprocessing:

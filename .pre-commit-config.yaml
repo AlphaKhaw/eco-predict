@@ -24,4 +24,4 @@ repos:
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: ['--max-line-length=80', '--ignore=E402']
+        args: ['--max-line-length=80', '--ignore=E402', '--ignore=W503']
