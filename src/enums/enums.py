@@ -29,12 +29,12 @@ class FeatureSelectionMethod(Enum):
     FPR = "fpr"
     FDR = "fdr"
     MUTUAL_INFO = "mutual_info"
-    MODEL = "model"
+    FEATURE_IMPORTANCE = "feature_importance"
+    PERMUTATION_IMPORTANCE = "permutation_importance"
 
 
 class ModelType(Enum):
     RANDOM_FOREST = "random_forest"
-    XGBOOST = "xgboost"
 
 
 def get_model_enum(model_type_str: str) -> ModelType:

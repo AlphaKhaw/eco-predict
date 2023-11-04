@@ -11,6 +11,7 @@ from sklearn.feature_selection import (
     f_classif,
     mutual_info_classif,
 )
+from sklearn.inspection import permutation_importance
 
 from src.enums.enums import FeatureSelectionMethod
 from src.utils.dataframe.dataframe_utils import read_dataframe
@@ -31,15 +32,18 @@ class FeatureSelector:
         Args:
             cfg (DictConfig): Hydra configuration YAML.
         """
+        self.cfg = cfg
         self.param = cfg.param
-        if not isinstance(cfg.method, FeatureSelectionMethod):
+        self.method = eval(cfg.method)
+        if not isinstance(self.method, FeatureSelectionMethod):
             raise ValueError(f"Invalid method: {cfg.method}")
-        self.method = cfg.method
 
     def select_features(
         self,
         X_train: pd.DataFrame,
         y_train: pd.Series,
+        X_test: pd.DataFrame = None,
+        y_test: pd.Series = None,
         estimator: Union[object, None] = None,
     ) -> np.ndarray:
         """
@@ -48,7 +52,10 @@ class FeatureSelector:
         Args:
             X_train (pd.DataFrame): Training data features.
             y_train (pd.Series): Training data labels.
+            X_test (pd.DataFrame): Testing data features. Defaults to None.
+            y_test (pd.Series): Testing data labels. Defaults to None.
             estimator (Union[object, None]): Base estimator for SelectFromModel.
+                                             Defaults to None.
 
         Returns:
             np.ndarray: Transformed features based on the selected method.
@@ -76,11 +83,34 @@ class FeatureSelector:
             self.selector = GenericUnivariateSelect(
                 score_func=mutual_info_classif, mode="k_best", param=self.param
             )
-        elif self.method == FeatureSelectionMethod.MODEL:
+        elif self.method == FeatureSelectionMethod.FEATURE_IMPORTANCE:
             select_from_model_kwargs = self.cfg.select_from_model_kwargs
             self.selector = SelectFromModel(
                 estimator=estimator, **select_from_model_kwargs
             )
+        elif self.method == FeatureSelectionMethod.PERMUTATION_IMPORTANCE:
+            perm_importance = permutation_importance(
+                estimator=estimator,
+                X=X_test,
+                y=y_test,
+                scoring=self.cfg.permutation_importance.scorer,
+                n_repeats=self.cfg.permutation_importance.n_repeats,
+                random_state=self.cfg.permutation_importance.random_state,
+            )
+            perm_importance_mean = perm_importance.importances_mean
+            if isinstance(self.cfg.permutation_importance.threshold, int):
+                top_n_features = self.cfg.permutation_importance.threshold
+                important_features_idx = np.argsort(perm_importance_mean)[
+                    -top_n_features:
+                ]
+            else:
+                threshold = self.cfg.permutation_importance.threshold * np.max(
+                    perm_importance_mean
+                )
+                important_features_idx = np.where(
+                    perm_importance_mean > threshold
+                )[0]
+            return important_features_idx
         else:
             raise ValueError(f"Invalid method: {self.method}")
 

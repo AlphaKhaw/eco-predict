@@ -4,11 +4,9 @@ from datetime import datetime
 
 import hydra
 import joblib
-import numpy as np
 import pandas as pd
 from names_generator import generate_name
 from omegaconf import DictConfig
-from sklearn.inspection import permutation_importance
 from sklearn.metrics import (
     make_scorer,
     mean_absolute_error,
@@ -17,7 +15,8 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold, cross_validate
 
-from src.enums.enums import ModelType
+from src.data_processing.feature_selector import FeatureSelector
+from src.enums.enums import FeatureSelectionMethod, ModelType
 from src.model.model import Model
 from src.utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
 
@@ -26,23 +25,45 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Trainer:
-    def __init__(self, cfg, model):
+    """
+    Trainer class to perform model training.
+    """
+
+    def __init__(self, cfg: DictConfig, model: Model) -> None:
         """
         Initializes the Trainer with a Model.
+
+        Args:
+            cfg (DictConfig): Hydra configuration YAML.
+            model (Model): Model class.
         """
-        self.cfg = cfg
+        self.cfg = cfg.training.trainer
         self.model = model
+        self.selector = FeatureSelector(cfg.data_processing.feature_selector)
         self.unique_id = generate_name()
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self._load_data()
+        self.kf = KFold(
+            n_splits=self.cfg.cross_validation.kfold.n_splits,
+            shuffle=self.cfg.cross_validation.kfold.shuffle,
+            random_state=self.cfg.cross_validation.kfold.random_state,
+        )
+        self.scoring = {
+            "MAE": make_scorer(mean_absolute_error),
+            "MSE": make_scorer(mean_squared_error, squared=True),
+            "RMSE": make_scorer(mean_squared_error, squared=False),
+            "R2": make_scorer(r2_score),
+        }
 
-    def train(self):
+        self._load_data()
+        if self.cfg.enable_feature_selection:
+            self._perform_feature_selection(
+                config=cfg.data_processing.feature_selector
+            )
+
+    def train(self) -> None:
         """
         Train the model.
         """
-        if self.cfg.trainer.feature_selection.enable_feature_selection:
-            self._perform_feature_selection()
-
         cross_validation_metrics = self._cross_validate()
         self.model.fit(self.X_train, self.y_train)
         test_metrics = self.evaluate()
@@ -51,40 +72,33 @@ class Trainer:
         )
         self._save_model()
 
-    def _perform_feature_selection(self):
-        config = self.cfg.trainer.feature_selection
-        if self.model.model_type == ModelType.XGBOOST:
-            pass
-        elif self.model.model_type == ModelType.RANDOM_FOREST:
-            self.model.fit(self.X_train, self.y_train)
-            scorer = make_scorer(mean_squared_error, greater_is_better=False)
-            perm_importance = permutation_importance(
-                estimator=self.model,
-                X=self.X_test,
-                y=self.y_test,
-                scoring=scorer,
-                n_repeats=config.permutation_importance.n_repeats,
-                random_state=config.permutation_importance.random_state,
-            )
-            perm_importance_mean = perm_importance.importances_mean
+    def _perform_feature_selection(self, config: DictConfig) -> None:
+        """
+        Feature Selection using FeatureSelector class.
 
-            # Check if threshold is an integer
-            if isinstance(config.permutation_importance.threshold, int):
-                top_n_features = config.permutation_importance.threshold
-                important_features_idx = np.argsort(perm_importance_mean)[
-                    -top_n_features:
-                ]
-            else:
-                threshold = config.permutation_importance.threshold * np.max(
-                    perm_importance_mean
-                )
-                important_features_idx = np.where(
-                    perm_importance_mean > threshold
-                )[0]
+        Args:
+            config (DictConfig): Feature Selector configuration.
+        """
+        self.model.fit(self.X_train, self.y_train)
+        if eval(config.method) == FeatureSelectionMethod.PERMUTATION_IMPORTANCE:
+            important_features_idx = self.selector.select_features(
+                X_train=self.X_train,
+                y_train=self.y_train,
+                X_test=self.X_test,
+                y_test=self.y_test,
+                estimator=self.model,
+            )
             logging.info("Selected features -")
             logging.info(f"{self.X_train.columns[important_features_idx]}")
             self.X_train = self.X_train.iloc[:, important_features_idx]
             self.X_test = self.X_test.iloc[:, important_features_idx]
+        else:
+            self.X_train = self.selector.select_features(
+                X_train=self.X_train, y_train=self.y_train, estimator=self.model
+            )
+            self.X_test = self.selector.selector.transform(self.X_test)
+            logging.info("Selected features -")
+            logging.info(f"{self.selector.selector.get_feature_names_out()}")
 
     def evaluate(self) -> dict:
         """
@@ -110,23 +124,12 @@ class Trainer:
         """
         Perform k-fold cross-validation and return evaluation metrics.
         """
-        scoring = {
-            "MAE": make_scorer(mean_absolute_error),
-            "MSE": make_scorer(mean_squared_error, squared=True),
-            "RMSE": make_scorer(mean_squared_error, squared=False),
-            "R2": make_scorer(r2_score),
-        }
-        kf = KFold(
-            n_splits=self.cfg.trainer.cross_validation.kfold.n_splits,
-            shuffle=self.cfg.trainer.cross_validation.kfold.shuffle,
-            random_state=self.cfg.trainer.cross_validation.kfold.random_state,
-        )
         cv_results = cross_validate(
             estimator=self.model,
             X=self.X_train,
             y=self.y_train,
-            scoring=scoring,
-            cv=kf,
+            scoring=self.scoring,
+            cv=self.kf,
             return_train_score=False,
         )
 
@@ -154,9 +157,12 @@ class Trainer:
         return cross_validation_metrics
 
     def _load_data(self) -> None:
-        train_datapath = self.cfg.trainer.data_path.train
-        test_datapath = self.cfg.trainer.data_path.test
-        target_column = self.cfg.trainer.target_column
+        """
+        Load and preprocess data based on the provided Hydra configuration.
+        """
+        train_datapath = self.cfg.general.data_path.train
+        test_datapath = self.cfg.general.data_path.test
+        target_column = self.cfg.general.target_column
 
         train_data = read_dataframe(train_datapath)
         test_data = read_dataframe(test_datapath)
@@ -166,12 +172,14 @@ class Trainer:
         self.X_test = test_data.drop(columns=[target_column])
         self.y_test = test_data[target_column]
 
-    def _save_metrics_to_csv(self, cv_metrics: dict, test_metrics: dict):
+    def _save_metrics_to_csv(
+        self, cv_metrics: dict, test_metrics: dict
+    ) -> None:
         """
         Save cross-validation and test metrics to a CSV file.
         """
         filename = f"metrics_{self.timestamp}_{self.unique_id}.csv"
-        filepath = os.path.join(self.cfg.trainer.metrics_folderpath, filename)
+        filepath = os.path.join(self.cfg.general.metrics_folderpath, filename)
 
         metrics_dataframe = pd.DataFrame(
             {
@@ -194,22 +202,18 @@ class Trainer:
         export_dataframe(dataframe=metrics_dataframe, output_filepath=filepath)
         logging.info(f"Saved metrics to {filepath}")
 
-    def _save_model(self):
+    def _save_model(self) -> None:
         """
         Save the trained model weights to a file.
         """
         identifier = f"{self.timestamp}_{self.unique_id}"
-        models_folderpath = self.cfg.trainer.models_folderpath
+        models_folderpath = self.cfg.general.models_folderpath
 
         if not os.path.exists(models_folderpath):
             os.makedirs(models_folderpath)
 
-        if self.model.model_type == ModelType.XGBOOST:
-            filename = f"{self.cfg.model.model_name}_{identifier}.json"
-            filepath = os.path.join(models_folderpath, filename)
-            self.model.model.save_model(filepath)
-        elif self.model.model_type == ModelType.RANDOM_FOREST:
-            filename = f"{self.cfg.model.model_name}_{identifier}.pkl"
+        if self.model.model_type == ModelType.RANDOM_FOREST:
+            filename = f"{self.cfg.model_name}_{identifier}.pkl"
             filepath = os.path.join(models_folderpath, filename)
             joblib.dump(self.model, filepath)
 
@@ -240,9 +244,9 @@ def run(cfg: DictConfig) -> str:
     Returns:
         str : Completion of Model Training.
     """
-    model_name = cfg.model.model_name
-    model_config = getattr(cfg.model, model_name.lower())
-    model = Model(cfg.model.model_name, **model_config)
+    model_name = cfg.training.trainer.model_name
+    model_config = getattr(cfg.training.trainer, model_name.lower())
+    model = Model(model_name, **model_config)
     trainer = Trainer(cfg, model)
     trainer.train()
 

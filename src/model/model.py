@@ -1,12 +1,10 @@
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 
 from src.base.base_model import BaseModel
 from src.enums.enums import ModelType, get_model_enum
 
 MODELS = {
     ModelType.RANDOM_FOREST: RandomForestRegressor,
-    ModelType.XGBOOST: XGBRegressor,
 }
 
 
@@ -28,7 +26,7 @@ class Model(BaseModel):
         return self.model.feature_importances_
 
 
-def get_model_instance(model_type, **kwargs):
+def get_model_instance(model_type: str, **kwargs):
     model_enum = get_model_enum(model_type)
     model_class = MODELS.get(model_enum)
     if model_class:
