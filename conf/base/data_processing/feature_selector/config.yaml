@@ -1,0 +1,10 @@
+method: FeatureSelectionMethod.PERMUTATION_IMPORTANCE
+param: 6
+select_from_model_kwargs:
+  threshold: null
+  max_features: 6
+permutation_importance:
+  scorer: "neg_root_mean_squared_error"
+  n_repeats: 30
+  random_state: 42
+  threshold: 6 #0.001
