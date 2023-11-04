@@ -1,15 +1,10 @@
-import os
-import sys
 from unittest.mock import patch
 
 import pytest
 from hydra import compose, initialize
 from omegaconf import DictConfig
 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, parent_dir)
-
-from data_processing.data_parser import DataParser
+from src.data_processing.data_parser import DataParser
 
 
 @pytest.fixture
@@ -41,7 +36,7 @@ def dataparser(config: DictConfig) -> DataParser:
     Returns:
         DataParser: An instance of the DataParser class.
     """
-    return DataParser(config)
+    return DataParser(config.data_parser)
 
 
 def test_check_expected_files(dataparser: DataParser):
@@ -50,21 +45,21 @@ def test_check_expected_files(dataparser: DataParser):
 
     # 1. Test when all files exist
     with patch("os.path.exists", return_value=True):
-        result = dataparser._check_expected_files(
+        result = dataparser.check_expected_files(
             expected_files, mock_output_folder
         )
-        assert result == False
+        assert not result
 
     # 2. Test when some files are missing
     with patch("os.path.exists", side_effect=[True, False]):
-        result = dataparser._check_expected_files(
+        result = dataparser.check_expected_files(
             expected_files, mock_output_folder
         )
         assert result == ["file2.txt"]
 
     # 3. Test when all files are missing
     with patch("os.path.exists", return_value=False):
-        result = dataparser._check_expected_files(
+        result = dataparser.check_expected_files(
             expected_files, mock_output_folder
         )
         assert result == expected_files
