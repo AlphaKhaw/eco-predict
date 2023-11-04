@@ -1,3 +1,37 @@
+# defaults:
+#   - override hydra/sweeper: "optuna"
+
+hydra:
+  sweeper:
+    direction: "minimize"
+    study_name: "eco-predict-hpt"
+    storage: null
+    n_trials: 10
+    n_jobs: -1
+    search_space:
+      random_forest.n_estimators:
+        type: "int"
+        low: 50
+        high: 200
+      random_forest.max_depth:
+        type: "int"
+        low: 5
+        high: 20
+      random_forest.min_samples_split:
+        type: "float"
+        low: 0.1
+        high: 1.0
+      random_forest.min_samples_leaf:
+        type: "float"
+        low: 0.1
+        high: 0.5
+      random_forest.max_features:
+        type: "categorical"
+        choices:
+          - 'auto'
+          - 'sqrt'
+          - 'log2'
+
 general:
   data_path:
     train: "${data_processing.data_splitter.general.output_folderpath}/${data_processing.data_splitter.general.suffix[0]}"
