@@ -1,3 +1,8 @@
 data_parser:
   expected_files: null
   output_folderpath: "./data/raw"
+
+data_preprocessor:
+  general:
+    output_folderpath: "output"
+    suffix: "merged.csv"

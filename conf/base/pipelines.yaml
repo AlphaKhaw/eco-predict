@@ -5,4 +5,3 @@ defaults:
   - data_processing/feature_selector: config
   - training/trainer: config
   - hyperparameter_tuning/hyperparameter_tuner: config
-  # - override hydra/sweeper: "optuna"
