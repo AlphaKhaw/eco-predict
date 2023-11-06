@@ -3,3 +3,4 @@
 *.ipynb linguist-language=Jupyter Notebook
 *.py linguist-vendored=false
 *.ipynb linguist-vendored=false
+*.pkl filter=lfs diff=lfs merge=lfs -text
