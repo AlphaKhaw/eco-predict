@@ -5,7 +5,8 @@ data/**
 outputs/
 
 # Model weights
-models/
+models/*
+!models/weights
 
 # Hydra Multirun output
 multirun/
