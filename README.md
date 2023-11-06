@@ -1,10 +1,10 @@
-<!-- <p align="center">
-  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/56162f8e-5be6-492e-aec0-7f1f74e18463" alt="Eco-Predict Banner" width="100%">
-</p> -->
-
 <p align="center">
-  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/cc492db0-103a-442a-b8e4-45a6a6dc2f47" alt="Eco-Predict Banner" width="100%">
+  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/56162f8e-5be6-492e-aec0-7f1f74e18463" alt="Eco-Predict Banner" width="100%">
 </p>
+
+<!-- <p align="center">
+  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/cc492db0-103a-442a-b8e4-45a6a6dc2f47" alt="Eco-Predict Banner" width="100%">
+</p> -->
 
 
 # Eco-Predict: AI-Driven Energy Consumption Analysis
