@@ -25,6 +25,7 @@ dependencies:
   - fastapi=0.103.0
   - python-multipart=0.0.6
   - prefect=2.14.2
+  - optuna=2.10.1
   - pip:
     - interpret==0.4.4
     - names_generator==0.1.0

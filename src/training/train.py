@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 import hydra
-import joblib
 import pandas as pd
 from names_generator import generate_name
 from omegaconf import DictConfig
@@ -16,9 +15,10 @@ from sklearn.metrics import (
 from sklearn.model_selection import KFold, cross_validate
 
 from src.data_processing.feature_selector import FeatureSelector
-from src.enums.enums import FeatureSelectionMethod, ModelType
+from src.enums.enums import FeatureSelectionMethod
 from src.model.model import Model
-from src.utils.dataframe.dataframe_utils import export_dataframe, read_dataframe
+from src.utils.dataframe.dataframe_utils import export_dataframe
+from src.utils.modelling.modelling import evaluate_model, load_data, save_model
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
@@ -102,21 +102,19 @@ class Trainer:
 
     def evaluate(self) -> dict:
         """
-        Evaluate the model and return various metrics.
-        """
-        predictions = self.model.predict(self.X_test)
-        mae = mean_absolute_error(self.y_test, predictions)
-        mse = mean_squared_error(self.y_test, predictions, squared=True)
-        rmse = mean_squared_error(self.y_test, predictions, squared=False)
-        r2 = r2_score(self.y_test, predictions)
+        Evaluate the model and return the following metrics:
+        - Mean Absolute Error (MAE)
+        - Mean Squared Error (MSE)
+        - Root Mean Squared Error (RMSE)
+        - R-squared (R^2)
 
-        metrics = {
-            "MAE": round(mae, 2),
-            "MSE": round(mse, 2),
-            "RMSE": round(rmse, 2),
-            "R2": round(r2, 2),
-        }
-        logging.info(f"Evaluation Metrics: {metrics}")
+        Returns:
+            dict: Dictionary containing evaluation metrics
+                  (MAE, MSE, RMSE, R-squared).
+        """
+        metrics = evaluate_model(
+            model=self.model, X_test=self.X_test, y_test=self.y_test
+        )
 
         return metrics
 
@@ -164,13 +162,12 @@ class Trainer:
         test_datapath = self.cfg.general.data_path.test
         target_column = self.cfg.general.target_column
 
-        train_data = read_dataframe(train_datapath)
-        test_data = read_dataframe(test_datapath)
-
-        self.X_train = train_data.drop(columns=[target_column])
-        self.y_train = train_data[target_column]
-        self.X_test = test_data.drop(columns=[target_column])
-        self.y_test = test_data[target_column]
+        self.X_train, self.y_train = load_data(
+            filepath=train_datapath, target_column=target_column
+        )
+        self.X_test, self.y_test = load_data(
+            filepath=test_datapath, target_column=target_column
+        )
 
     def _save_metrics_to_csv(
         self, cv_metrics: dict, test_metrics: dict
@@ -209,15 +206,12 @@ class Trainer:
         identifier = f"{self.timestamp}_{self.unique_id}"
         models_folderpath = self.cfg.general.models_folderpath
 
-        if not os.path.exists(models_folderpath):
-            os.makedirs(models_folderpath)
-
-        if self.model.model_type == ModelType.RANDOM_FOREST:
-            filename = f"{self.cfg.model_name}_{identifier}.pkl"
-            filepath = os.path.join(models_folderpath, filename)
-            joblib.dump(self.model, filepath)
-
-        logging.info(f"Saved model - {filepath}")
+        save_model(
+            model=self.model,
+            model_name=self.cfg.model_name,
+            identifier=identifier,
+            models_folderpath=models_folderpath,
+        )
 
 
 @hydra.main(config_path="../../conf/base", config_name="pipelines.yaml")

@@ -1,10 +1,15 @@
 import logging
+import os
 import re
+from typing import Tuple, Union
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import KFold, cross_validate
+
+from src.utils.dataframe.dataframe_utils import read_dataframe
 
 logging.warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO)
@@ -48,10 +53,15 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.DataFrame) -> dict:
     rmse = mean_squared_error(y_true=y_test, y_pred=y_pred, squared=False)
     r2 = r2_score(y_true=y_test, y_pred=y_pred)
 
-    results = {"MAE": mae, "MSE": mse, "RMSE": rmse, "R-squared": r2}
-    logging.info("Evaluation results:\n")
-    for metric, score in results.items():
-        print(f"{metric}: {score:.2f}")
+    metrics = {
+        "MAE": round(mae, 2),
+        "MSE": round(mse, 2),
+        "RMSE": round(rmse, 2),
+        "R2": round(r2, 2),
+    }
+    logging.info(f"Evaluation Metrics: {metrics}")
+
+    return metrics
 
 
 def get_cross_val_scores(
@@ -101,3 +111,56 @@ def get_cross_val_scores(
                 print(f"Test {metric_name[5:]}: {mean_score:.2f} EUI")
             else:
                 print(f"Test {metric_name[5:]}: {mean_score:.2f}")
+
+
+def load_data(
+    filepath: str, target_column: str
+) -> Tuple[pd.DataFrame, pd.Series]:
+    """
+    Read in dataset and return features data and target data.
+
+    Args:
+        filepath (str): Filepath of the training, validation or test dataset.
+        target_column (str): Name of target feature.
+
+    Returns:
+        Tuple[pd.DataFrame, pd.Series]: Features and target data.
+    """
+    dataframe = read_dataframe(filepath=filepath)
+    X = dataframe.drop(columns=[target_column])
+    y = dataframe[target_column]
+
+    return X, y
+
+
+def save_model(
+    model: Union[object, dict],
+    model_name: str,
+    identifier: str,
+    models_folderpath: str,
+) -> None:
+    """
+    Save the trained model weights to a file.
+
+    Args:
+        model (Union[object, dict]): The trained machine learning model to be
+                                     saved.
+        model_name (str): The name of the model.
+        identifier (str): An unique identifier for the model.
+        models_folderpath (str): The folder path where the model should be
+                                 saved.
+    """
+    if not os.path.exists(models_folderpath):
+        os.makedirs(models_folderpath)
+
+    if isinstance(model, dict):
+        for name, mdl in model.items():
+            filename = f"{model_name}_{name}_{identifier}.pkl"
+            filepath = os.path.join(models_folderpath, filename)
+            joblib.dump(mdl, filepath)
+            logging.info(f"Saved model - {filepath}")
+    else:
+        filename = f"{model_name}_{identifier}.pkl"
+        filepath = os.path.join(models_folderpath, filename)
+        joblib.dump(model, filepath)
+        logging.info(f"Saved model - {filepath}")
