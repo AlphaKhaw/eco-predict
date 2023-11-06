@@ -1,45 +1,32 @@
+<!-- <p align="center">
+  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/56162f8e-5be6-492e-aec0-7f1f74e18463" alt="Eco-Predict Banner" width="100%">
+</p> -->
+
+<p align="center">
+  <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/cc492db0-103a-442a-b8e4-45a6a6dc2f47" alt="Eco-Predict Banner" width="100%">
+</p>
+
+
 # Eco-Predict: AI-Driven Energy Consumption Analysis
 
-Eco-Predict is an AI-powered tool designed to predict the Energy Usage Intensity (EUI) of buildings based on specific building features. The underlying model is served using FastAPI and the application interface is built using Streamlit.
+Eco-Predict employs artificial intelligence to estimate the Energy Usage Intensity (EUI) of buildings in Singapore. Utilizing building attributes, it offers a predictive insight into energy consumption, fostering energy efficiency and architectural advancement.
 
-## Problem Statement
+## Introduction
 
-With rising energy costs and increasing awareness about environmental sustainability, it's crucial for building owners, managers, and architects to understand a building's energy consumption patterns. Predicting the EUI of a building based on its features allows stakeholders to make informed decisions regarding energy conservation measures and sustainable design principles.
+The escalating costs and environmental impact of energy consumption necessitate a strategic approach to energy management in buildings. Eco-Predict addresses this by enabling precise predictions of EUI, guiding stakeholders toward energy optimization and sustainable design.
 
-## Target Users
 
-- `Building Owners`: Understand energy performance to reduce costs.
-- `Architects & Designers`: Design buildings with optimal energy performance in mind.
-- `Facility Managers`: Implement energy conservation measures effectively.
-- `Consultants`: Utilise machine learning to quantify estimation of building energy performance to clients and stakeholders.
-
-### Dataset Description
-
-Source: https://beta.data.gov.sg/collections/22/datasets/d_e86d8a219d0936dbb321ade068a381da/view
+## Dataset Overview
 
 This dataset contains the building energy performance data collected through BCA’s Building Energy Submission System (BESS), under the legislation on Annual Mandatory Submission of Building Information and Energy Consumption Data for Section 22FJ ‘Powers to Obtain Information’ of Building Control Act.
 
-The dataset consists of various building features, including:
-
-`percentageusageofled`: The percentage of lighting fixtures that are LED.
-`energyuseintensity_year`: Energy use intensity for specific years (2017, 2018, 2019).
-`typeofairconditioningsystem_DistrictCoolingPlant`: Whether the building uses a district cooling plant type of air conditioning system (1 for Yes, 0 for No).
-`averagemonthlybuildingoccupancyrate`: Average monthly building occupancy rate as a percentage.
-
-**Note**: Please refer to the various Exploratory Data Analysis (EDA) notebooks for detailed analysis.
-
-## Features
-
-1. Predict Energy Usage Intensity (EUI) based on building features.
-2. Intuitive Streamlit interface for user inputs.
-3. FastAPI backend for model serving.
-4. Dockerized application for easy deployment.
+*Source*: https://beta.data.gov.sg/collections/22/datasets/d_e86d8a219d0936dbb321ade068a381da/view
 
 ## Prerequisites
 
 - Docker (for local deployment)
-- Docker Compose (for local deployment)
 - AWS account (for AWS Cloud deployment using EC2)
+
 
 ## Local Setup
 
@@ -57,65 +44,35 @@ The dataset consists of various building features, including:
    docker run -d -p 8000:8000 alphakhaw/eco-predict:latest
    ```
 
-3. **Using Docker Compose**
-
-   Assuming you have a `docker-compose.yml` file set up for the service:
+    Or, deploy using **Docker Compose**:
 
    ```
    docker-compose up
    ```
-
-   This will bring up all the services defined in your `docker-compose.yml` file.
-
-4. **Access the FastAPI server locally at:** `http://localhost:8000`
-
-
-## Deployment to AWS EC2
-
-1. Launch a new EC2 instance on AWS.
-
-2. SSH into your EC2 instance:
-
-   ```
-   ssh -i path_to_your_key.pem ec2-user@your-ec2-ip-address
-   ```
-
-3. Install Docker on EC2:
-
-   ```
-   sudo yum update -y
-   sudo yum install docker -y
-   sudo service docker start
-   sudo usermod -a -G docker ec2-user
-   ```
-
-4. Log out and log back in again for the group permissions to take effect.
-
-5. Pull the Docker image:
-
-   ```
-   docker pull alphakhaw/eco-predict:latest
-   ```
-
-6. Run the container:
-
-   ```
-   docker run -d -p 8080:8000 alphakhaw/eco-predict:latest
-   ```
-
-7. Access the FastAPI server at: `http://your-ec2-ip-address:8080`
+3. **Access the FastAPI server locally at:** `http://localhost:8000`
 
 ## Usage
 
 ### Streamlit Interface
 
 - Navigate to the [Streamlit Web Application](https://alphakhaw-eco-predict-app-6a2wmt.streamlit.app/)
-- Input building features such as the percentage usage of LED, type of air conditioning system, average monthly building occupancy rate, and energy use intensities for 2017, 2018, and 2019.
-- Click the "Predict" button to get the predicted EUI value.
+- Input respective building features values.
+- Click the "Predict" button to get the predicted **Energy Usage Intensity (EUI)** value.
 
 ### API Endpoints
 
-- `POST /predict_one/`:
+The application provides a variety of endpoints for energy consumption prediction:
+
+- `POST /predict_one/`: For predicting the Energy Usage Intensity (EUI) based on a single set of building features.
+- `POST /predict_many/`: For batch predictions, accepting multiple sets of building features.
+- `POST /predict_csv/`: For predictions based on a CSV file input, ideal for processing numerous entries at once.
+
+Detailed instructions for using these endpoints, including the required payload formats and example responses, are available in our [GitHub Wiki](https://github.com/alphakhaw/eco-predict/wiki/API-Endpoints).
+
+Please visit the Wiki to get a comprehensive guide on how to interact with each endpoint.
+
+
+<!-- - `POST /predict_one/`:
 
   - **Description**: Accepts a single set of building features and returns the predicted EUI.
   - **Payload**:
@@ -170,4 +127,4 @@ The dataset consists of various building features, including:
     {
         "predictions": [float, float, ...]
     }
-    ```
+    ``` -->
