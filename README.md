@@ -6,15 +6,14 @@
   <img src="https://github.com/AlphaKhaw/eco-predict/assets/87654386/cc492db0-103a-442a-b8e4-45a6a6dc2f47" alt="Eco-Predict Banner" width="100%">
 </p> -->
 
+<!-- # Eco-Predict: AI-Driven Energy Consumption Analysis -->
+# Eco-Predict
 
-# Eco-Predict: AI-Driven Energy Consumption Analysis
-
-Eco-Predict employs artificial intelligence to estimate the Energy Usage Intensity (EUI) of buildings in Singapore. Utilizing building attributes, it offers a predictive insight into energy consumption, fostering energy efficiency and architectural advancement.
+`Eco-Predict` employs artificial intelligence to estimate the Energy Usage Intensity (EUI) of buildings in Singapore. Utilising building attributes, it offers a predictive insight into energy consumption, fostering energy efficiency and architectural advancement.
 
 ## Introduction
 
-The escalating costs and environmental impact of energy consumption necessitate a strategic approach to energy management in buildings. Eco-Predict addresses this by enabling precise predictions of EUI, guiding stakeholders toward energy optimization and sustainable design.
-
+The escalating costs and environmental impact of energy consumption necessitate a strategic approach to energy management in buildings. `Eco-Predict` addresses this by enabling precise predictions of EUI, guiding stakeholders toward energy optimisation and sustainable design.
 
 ## Dataset Overview
 
@@ -70,7 +69,6 @@ The application provides a variety of endpoints for energy consumption predictio
 Detailed instructions for using these endpoints, including the required payload formats and example responses, are available in our [GitHub Wiki](https://github.com/alphakhaw/eco-predict/wiki/API-Endpoints).
 
 Please visit the Wiki to get a comprehensive guide on how to interact with each endpoint.
-
 
 <!-- - `POST /predict_one/`:
 
